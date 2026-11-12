@@ -1,0 +1,9 @@
+{
+  "name": "1bk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "1BK - juego de cartas multijugador con salas en línea",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

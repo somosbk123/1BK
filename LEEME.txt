@@ -1,0 +1,32 @@
+1BK — versión para Render (salas en línea con enlace)
+=====================================================
+
+QUÉ ES
+Un servidor Node.js (sin dependencias) que sirve el juego y gestiona las salas
+en tiempo real. Las cartas de los demás jugadores nunca llegan a tu navegador.
+
+CÓMO SUBIRLO (unos 10 minutos)
+1) GitHub: entra a github.com > New repository > nombre "1bk" > Create.
+   Luego "uploading an existing file" y arrastra TODO el contenido de esta carpeta
+   (server.js, engine.js, package.json, render.yaml, .gitignore y la carpeta public/).
+   Commit changes.
+2) Render: dashboard.render.com > New + > Web Service > conecta tu GitHub
+   y elige el repo "1bk".
+3) Configuración:
+     Language: Node
+     Build Command: npm install
+     Start Command: node server.js
+     Instance Type: Starter (siempre activo)  — o Free (se duerme a los 15 min sin uso)
+     Advanced > Health Check Path: /healthz
+   (Si usas render.yaml, también puedes elegir New + > Blueprint.)
+4) Create Web Service. Cuando diga "Live", abre la URL (algo.onrender.com),
+   pulsa "Crear sala" y copia el enlace para tus amigos.
+
+PRUEBA LOCAL (opcional, requiere Node 18+)
+   node server.js   ->  abre http://localhost:3000
+
+NOTAS
+- Las salas viven en la memoria del servidor: si Render reinicia o redespliega,
+  las salas activas se pierden (hay que crear una nueva). Usa UNA sola instancia.
+- Una sala se borra tras 6 h sin nadie conectado.
+- Si un jugador se desconecta en su turno, el servidor roba/pasa por él a los 25 s.

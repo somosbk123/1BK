@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: 1bk
+    runtime: node
+    plan: starter        # cambia a "free" si prefieres gratis (se duerme tras 15 min sin uso)
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /healthz
