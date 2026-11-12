@@ -533,9 +533,30 @@ lsSet('chispa-id', S.me.id); S.key = S.me.id;
 let unsubRoom=null, unsubPlayers=null, joinTried=false, slowTimer=0, botTimer=0, idleTimer=0, pendingRender=false, renderedView='';
 
 /* ================= sonido ================= */
-let AC=null;
+let AC=null, unlocked=false, keep=null;
+function unlockAudio(){
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch(e){}
+  try {
+    if (!AC) AC = new (window.AudioContext||window.webkitAudioContext)();
+    if (AC.state!=='running') AC.resume();
+    const b = AC.createBuffer(1,1,22050), src = AC.createBufferSource(); src.buffer = b; src.connect(AC.destination); src.start(0);
+  } catch(e){}
+  // iOS: un <audio> silencioso en bucle hace que el sonido no dependa del interruptor de silencio
+  try {
+    if (!keep){
+      const n = 4410, buf = new ArrayBuffer(44+n*2), v = new DataView(buf), w = (o,t)=>{ for (let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i)); };
+      w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVEfmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+      v.setUint32(24,44100,true); v.setUint32(28,88200,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
+      keep = new Audio(URL.createObjectURL(new Blob([buf],{type:'audio/wav'}))); keep.loop = true; keep.volume = 0.01; keep.setAttribute('playsinline','');
+    }
+    keep.play().catch(()=>{});
+  } catch(e){}
+  if (AC && AC.state==='running') unlocked = true;
+}
+['pointerdown','touchstart','touchend','click','keydown'].forEach(ev => window.addEventListener(ev, () => { if (!unlocked || (AC && AC.state!=='running')) unlockAudio(); }, { passive:true, capture:true }));
+document.addEventListener('visibilitychange', () => { if (!document.hidden && AC && AC.state!=='running'){ unlocked = false; try { AC.resume(); } catch(e){} } });
 function audio(){ if (S.muted) return null;
-  try { if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); if (AC.state==='suspended') AC.resume(); return AC; } catch(e){ return null; } }
+  try { if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); if (AC.state!=='running') AC.resume(); return AC; } catch(e){ return null; } }
 function tone(f, d, o){ const ac = audio(); if(!ac) return; o = o||{};
   try { const t = ac.currentTime + (o.at||0), os = ac.createOscillator(), g = ac.createGain();
     os.type = o.type||'triangle'; os.frequency.setValueAtTime(f,t);
